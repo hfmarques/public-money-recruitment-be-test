@@ -1,4 +1,5 @@
 ﻿using VacationRental.Api.Models;
+using VacationRental.Api.Models.ViewModels;
 
 namespace VacationRental.Api.Services
 {

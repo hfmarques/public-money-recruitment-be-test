@@ -1,4 +1,6 @@
-﻿namespace VacationRental.Api.Repositories
+﻿using System.Collections.Generic;
+
+namespace VacationRental.Api.Repositories.Abstractions
 {
     public interface IRepository<T>
     {

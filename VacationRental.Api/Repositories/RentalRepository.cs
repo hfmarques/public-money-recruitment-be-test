@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using VacationRental.Api.Models;
+using VacationRental.Api.Models.Entities;
+using VacationRental.Api.Repositories.Abstractions;
 
 namespace VacationRental.Api.Repositories
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using VacationRental.Api.Models;
+using VacationRental.Api.Models.ViewModels;
 using VacationRental.Api.Services;
 
 namespace VacationRental.Api.Controllers
@@ -10,14 +10,13 @@ namespace VacationRental.Api.Controllers
     [ApiController]
     public class CalendarController : ControllerBase
     {
-        private readonly IDictionary<int, BookingViewModel> _bookings;
         private readonly IRentalService _rentalService;
+        private readonly IBookingService _bookingService;
 
-        public CalendarController(
-            IDictionary<int, BookingViewModel> bookings, IRentalService rentalService)
+        public CalendarController(IRentalService rentalService, IBookingService bookingService)
         {
-            _bookings = bookings;
             _rentalService = rentalService;
+            _bookingService = bookingService;
         }
 
         [HttpGet]
@@ -41,7 +40,7 @@ namespace VacationRental.Api.Controllers
                     Bookings = new List<CalendarBookingViewModel>()
                 };
 
-                foreach (var booking in _bookings.Values)
+                foreach (var booking in _bookingService.GetAll())
                 {
                     if (booking.RentalId == rentalId
                         && booking.Start <= date.Date && booking.Start.AddDays(booking.Nights) > date.Date)

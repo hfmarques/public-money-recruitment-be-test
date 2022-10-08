@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using VacationRental.Api.Models;
+using VacationRental.Api.Models.Entities;
+using VacationRental.Api.Models.ViewModels;
 
 namespace VacationRental.Api.Configurations
 {
@@ -10,6 +11,10 @@ namespace VacationRental.Api.Configurations
             CreateMap<Rental, RentalViewModel>();
             CreateMap<RentalViewModel, Rental>();
             CreateMap<RentalBindingModel, Rental>();
+
+            CreateMap<Booking, BookingViewModel>();
+            CreateMap<BookingViewModel, Booking>();
+            CreateMap<BookingBindingModel, Booking>();
         }
     }
 }

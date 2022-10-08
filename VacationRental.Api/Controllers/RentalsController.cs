@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
+using VacationRental.Api.Models.ViewModels;
 using VacationRental.Api.Services;
 
 namespace VacationRental.Api.Controllers

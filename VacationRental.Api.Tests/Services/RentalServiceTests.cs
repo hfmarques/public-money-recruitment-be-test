@@ -3,7 +3,10 @@ using AutoMapper;
 using Moq;
 using VacationRental.Api.Configurations;
 using VacationRental.Api.Models;
+using VacationRental.Api.Models.Entities;
+using VacationRental.Api.Models.ViewModels;
 using VacationRental.Api.Repositories;
+using VacationRental.Api.Repositories.Abstractions;
 using VacationRental.Api.Services;
 using Xunit;
 

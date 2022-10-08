@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using VacationRental.Api.Models;
+using VacationRental.Api.Models.ViewModels;
 using Xunit;
 
 namespace VacationRental.Api.Tests.Integration
@@ -33,9 +33,9 @@ namespace VacationRental.Api.Tests.Integration
 
             var postBookingRequest = new BookingBindingModel
             {
-                 RentalId = postRentalResult.Id,
-                 Nights = 3,
-                 Start = new DateTime(2001, 01, 01)
+                RentalId = postRentalResult.Id,
+                Nights = 3,
+                Start = new DateTime(2001, 01, 01)
             };
 
             ResourceIdViewModel postBookingResult;
@@ -90,12 +90,10 @@ namespace VacationRental.Api.Tests.Integration
                 Start = new DateTime(2002, 01, 02)
             };
 
-            await Assert.ThrowsAsync<ApplicationException>(async () =>
+            using (var postBooking2Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking2Request))
             {
-                using (var postBooking2Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking2Request))
-                {
-                }
-            });
+                Assert.True(!postBooking2Response.IsSuccessStatusCode);
+            }
         }
     }
 }

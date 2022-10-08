@@ -1,7 +1,10 @@
 ﻿using System;
 using AutoMapper;
 using VacationRental.Api.Models;
+using VacationRental.Api.Models.Entities;
+using VacationRental.Api.Models.ViewModels;
 using VacationRental.Api.Repositories;
+using VacationRental.Api.Repositories.Abstractions;
 
 namespace VacationRental.Api.Services
 {
