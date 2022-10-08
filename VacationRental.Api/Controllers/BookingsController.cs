@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
+using VacationRental.Api.Services;
 
 namespace VacationRental.Api.Controllers
 {
@@ -9,15 +10,14 @@ namespace VacationRental.Api.Controllers
     [ApiController]
     public class BookingsController : ControllerBase
     {
-        private readonly IDictionary<int, RentalViewModel> _rentals;
         private readonly IDictionary<int, BookingViewModel> _bookings;
+        private readonly IRentalService _rentalService;
 
         public BookingsController(
-            IDictionary<int, RentalViewModel> rentals,
-            IDictionary<int, BookingViewModel> bookings)
+            IDictionary<int, BookingViewModel> bookings, IRentalService rentalService)
         {
-            _rentals = rentals;
             _bookings = bookings;
+            _rentalService = rentalService;
         }
 
         [HttpGet]
@@ -35,7 +35,7 @@ namespace VacationRental.Api.Controllers
         {
             if (model.Nights <= 0)
                 throw new ApplicationException("Nigts must be positive");
-            if (!_rentals.ContainsKey(model.RentalId))
+            if (_rentalService.GetById(model.RentalId) is null)
                 throw new ApplicationException("Rental not found");
 
             for (var i = 0; i < model.Nights; i++)
@@ -51,7 +51,7 @@ namespace VacationRental.Api.Controllers
                         count++;
                     }
                 }
-                if (count >= _rentals[model.RentalId].Units)
+                if (count >= _rentalService.GetById(model.RentalId).Units)
                     throw new ApplicationException("Not available");
             }
 
