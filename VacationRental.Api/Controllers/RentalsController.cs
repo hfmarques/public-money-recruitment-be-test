@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
-using VacationRental.Api.Models;
 using VacationRental.Api.Models.ViewModels;
 using VacationRental.Api.Services;
 using VacationRental.Api.Services.Interfaces;
@@ -12,10 +11,12 @@ namespace VacationRental.Api.Controllers
     public class RentalsController : ControllerBase
     {
         private readonly IRentalService _rentalService;
+        private readonly IBookingService _bookingService;
 
-        public RentalsController(IRentalService rentalService)
+        public RentalsController(IRentalService rentalService, IBookingService bookingService)
         {
             _rentalService = rentalService;
+            _bookingService = bookingService;
         }
 
         [HttpGet]
@@ -51,14 +52,18 @@ namespace VacationRental.Api.Controllers
                 return BadRequest(e.Message);
             }
         }
-        
+
         [HttpPut]
         [Route("{rentalId:int}")]
-        public IActionResult Put(int rentalId, [FromBody]RentalBindingModel model)
+        public IActionResult Put(int rentalId, [FromBody] RentalBindingModel model)
         {
             try
             {
-                _rentalService.Update(rentalId, model);
+                if (_bookingService.PreparationTimeChangeIsAllowed(model.PreparationTimeInDays))
+                    _rentalService.Update(rentalId, model);
+                else
+                    return BadRequest(
+                        "There is a overlapping between existing bookings and/or their preparation times");
 
                 return NoContent();
             }

@@ -16,6 +16,7 @@ namespace VacationRental.Api.Tests.Services
     public class BookingServiceTests
     {
         private readonly Mock<IBookingRepository> _bookingRepository;
+        private readonly Mock<IRentalService> _rentalService;
         private readonly IBookingService _bookingService;
 
         public BookingServiceTests()
@@ -26,11 +27,11 @@ namespace VacationRental.Api.Tests.Services
             IMapper mapper = new Mapper(configuration);
 
             _bookingRepository = new Mock<IBookingRepository>();
-            var rentalService = new Mock<IRentalService>();
+            _rentalService = new Mock<IRentalService>();
             
-            _bookingService = new BookingService(mapper, _bookingRepository.Object, rentalService.Object);
+            _bookingService = new BookingService(mapper, _bookingRepository.Object, _rentalService.Object);
 
-            rentalService.Setup(x => x.GetById(It.IsAny<int>()))
+            _rentalService.Setup(x => x.GetById(It.IsAny<int>()))
                 .Returns(new RentalViewModel {Id = 1, Units = 2, PreparationTimeInDays = 1});
         }
 
@@ -125,15 +126,15 @@ namespace VacationRental.Api.Tests.Services
         }
         
         [Theory]//existing booking days start at day 3, has 6 nights and 1 preparation day, so it finishes at day 7
-        [InlineData(2, 1)]//starts on day 2 and finish at day 3+1=4
-        [InlineData(2, 2)]//starts on day 2 and finish at day 4+1=5
-        [InlineData(3, 3)]//starts on day 3 and finish at day 6+1=7
-        [InlineData(4, 1)]//starts on day 4 and finish at day 5+1=6
-        [InlineData(5, 2)]//starts on day 5 and finish at day 7+1=8
-        [InlineData(2, 5)]//starts on day 2 and finish at day 7+1=8
-        [InlineData(1, 1)]//starts on day 1 and finish at day 2+1=3
-        [InlineData(6, 1)]//starts on day 6 and finish at day 6+1=8
-        public void VerifyBookingAvailabilityWithPreparationTime_BookingOverlapExist_ReturnsFalse(int startDay, int nights)
+        [InlineData(2, 1, 1)]//starts on day 2 and finish at day 3+1=4
+        [InlineData(2, 2, 1)]//starts on day 2 and finish at day 4+1=5
+        [InlineData(3, 3, 1)]//starts on day 3 and finish at day 6+1=7
+        [InlineData(4, 1, 1)]//starts on day 4 and finish at day 5+1=6
+        [InlineData(5, 2, 1)]//starts on day 5 and finish at day 7+1=8
+        [InlineData(2, 5, 1)]//starts on day 2 and finish at day 7+1=8
+        [InlineData(1, 1, 1)]//starts on day 1 and finish at day 2+1=3
+        [InlineData(6, 1, 1)]//starts on day 6 and finish at day 6+1=8
+        public void VerifyBookingAvailabilityWithPreparationTime_BookingOverlapExist_ReturnsFalse(int startDay, int nights, int preparationTime)
         {
             var existingBookings =
                 new List<Booking>
@@ -151,8 +152,6 @@ namespace VacationRental.Api.Tests.Services
                         RentalId = 1,
                     },
                 };
-            
-            
 
             var booking = new Booking
             {
@@ -161,7 +160,7 @@ namespace VacationRental.Api.Tests.Services
                 RentalId = 1,
             };
 
-            var result = _bookingService.VerifyBookingAvailabilityWithPreparationTime(booking, existingBookings);
+            var result = _bookingService.VerifyBookingAvailabilityWithPreparationTime(booking, existingBookings, preparationTime);
 
             Assert.True(!result);
         }
@@ -187,7 +186,7 @@ namespace VacationRental.Api.Tests.Services
                 RentalId = 1,
             };
 
-            var result = _bookingService.VerifyBookingAvailabilityWithPreparationTime(booking, existingBookings);
+            var result = _bookingService.VerifyBookingAvailabilityWithPreparationTime(booking, existingBookings, 1);
 
             Assert.True(result);
         }
@@ -196,6 +195,19 @@ namespace VacationRental.Api.Tests.Services
         public void Add_BookingIsNull_ThrowArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => _bookingService.Add(null));
+        }
+        
+        [Fact]
+        public void Add_NightIsNegative_ThrowArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => _bookingService.Add(new BookingBindingModel{Nights = -1}));
+        }
+        
+        [Fact]
+        public void Add_RentalDoesNotExist_ThrowArgumentException()
+        {
+            _rentalService.Setup(x => x.GetById(It.IsAny<int>())).Returns((RentalViewModel) null);
+            Assert.Throws<ArgumentException>(() => _bookingService.Add(new BookingBindingModel{Nights = 1}));
         }
 
         [Fact]
@@ -236,6 +248,19 @@ namespace VacationRental.Api.Tests.Services
         {
             Assert.Throws<ArgumentException>(() => _bookingService.Update(new BookingViewModel {Id = 1}));
         }
+        
+        [Fact]
+        public void Update_NightIsNegative_ThrowArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => _bookingService.Update(new BookingViewModel{Nights = -1}));
+        }
+        
+        [Fact]
+        public void Update_RentalDoesNotExist_ThrowArgumentException()
+        {
+            _rentalService.Setup(x => x.GetById(It.IsAny<int>())).Returns((RentalViewModel) null);
+            Assert.Throws<ArgumentException>(() => _bookingService.Update(new BookingViewModel{Nights = 1}));
+        }
 
         [Fact]
         public void Update_BookingIsValid_UpdateTheBooking()
@@ -273,6 +298,62 @@ namespace VacationRental.Api.Tests.Services
 
             _bookingRepository.Verify(x =>
                 x.Update(It.IsAny<Booking>()), Times.Once);
+        }
+
+        [Fact]
+        public void PreparationTimeChangeIsAllowed_HasOverlap_ReturnsFalse()
+        {
+            _rentalService.Setup(x => x.GetById(It.IsAny<int>())).Returns(new RentalViewModel {Units = 1});
+            _bookingRepository.Setup(x => x.GetAll())
+                .Returns(new List<Booking>
+                {
+                    new Booking
+                    {
+                        Id = 1,
+                        Nights = 1,
+                        Start = DateTime.Now,
+                        RentalId = 1,
+                    },
+                    new Booking
+                    {
+                        Id = 2,
+                        Nights = 2,
+                        Start = DateTime.Now.AddDays(4),
+                        RentalId = 1,
+                    }
+                });
+
+            var result = _bookingService.PreparationTimeChangeIsAllowed(3);
+            
+            Assert.False(result);
+        }
+        
+        [Fact]
+        public void PreparationTimeChangeIsAllowed_NoOverlap_ReturnsTrue()
+        {
+            _rentalService.Setup(x => x.GetById(It.IsAny<int>())).Returns(new RentalViewModel {Units = 1});
+            _bookingRepository.Setup(x => x.GetAll())
+                .Returns(new List<Booking>
+                {
+                    new Booking
+                    {
+                        Id = 1,
+                        Nights = 1,
+                        Start = DateTime.Now,
+                        RentalId = 1,
+                    },
+                    new Booking
+                    {
+                        Id = 2,
+                        Nights = 2,
+                        Start = DateTime.Now.AddDays(4),
+                        RentalId = 1,
+                    }
+                });
+
+            var result = _bookingService.PreparationTimeChangeIsAllowed(1);
+            
+            Assert.True(result);
         }
     }
 }
