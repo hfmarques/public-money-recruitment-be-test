@@ -44,12 +44,34 @@ namespace VacationRental.Api.Services
                 foreach (var booking in existingBookings)
                 {
                     if (booking.RentalId == model.RentalId
-                        && (booking.Start.Date <= model.Start.Date &&
-                            booking.Start.Date.AddDays(booking.Nights) > model.Start.Date)
-                        || (booking.Start.Date < model.Start.AddDays(model.Nights) &&
-                            booking.Start.Date.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights))
-                        || (booking.Start.Date > model.Start &&
-                            booking.Start.Date.AddDays(booking.Nights) < model.Start.AddDays(model.Nights)))
+                        && (booking.Start <= model.Start.Date && booking.Start.AddDays(booking.Nights) > model.Start.Date)
+                        || (booking.Start < model.Start.AddDays(model.Nights) && booking.Start.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights))
+                        || (booking.Start > model.Start && booking.Start.AddDays(booking.Nights) < model.Start.AddDays(model.Nights)))
+                    {
+                        count++;
+                    }
+                }
+
+                if (count >= _rentalService.GetById(model.RentalId).Units)
+                    return false;
+            }
+
+            return true;
+        }
+        
+        public bool VerifyBookingAvailabilityWithPreparationTime(Booking model, List<Booking> existingBookings)
+        {
+            var rental = _rentalService.GetById(model.RentalId);
+            
+            for (var i = 0; i < model.Nights; i++)
+            {
+                var count = 0;
+                foreach (var booking in existingBookings)
+                {
+                    if (booking.RentalId == model.RentalId
+                        && (booking.Start <= model.Start.Date && booking.Start.AddDays(booking.Nights + rental.PreparationTimeInDays) > model.Start.Date)
+                        || (booking.Start < model.Start.AddDays(model.Nights + rental.PreparationTimeInDays) && booking.Start.AddDays(booking.Nights + rental.PreparationTimeInDays) >= model.Start.AddDays(model.Nights + rental.PreparationTimeInDays))
+                        || (booking.Start > model.Start && booking.Start.AddDays(booking.Nights + rental.PreparationTimeInDays) < model.Start.AddDays(model.Nights + rental.PreparationTimeInDays)))
                     {
                         count++;
                     }
@@ -75,7 +97,7 @@ namespace VacationRental.Api.Services
                 throw new ArgumentException("Rental not found", nameof(bookingBindingModel.RentalId));
 
             var booking = _mapper.Map<Booking>(bookingBindingModel);
-            var validBooking = VerifyBookingAvailability(
+            var validBooking = VerifyBookingAvailabilityWithPreparationTime(
                 booking,
                 _bookingRepository.GetAll().ToList());
             if (!validBooking)
@@ -111,7 +133,7 @@ namespace VacationRental.Api.Services
             var existingBookings = _bookingRepository
                 .GetAll()
                 .Where(x => x.Id != booking.Id).ToList();
-            var validBooking = VerifyBookingAvailability(
+            var validBooking = VerifyBookingAvailabilityWithPreparationTime(
                 booking,
                 existingBookings
                 );

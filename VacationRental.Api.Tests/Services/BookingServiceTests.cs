@@ -31,7 +31,7 @@ namespace VacationRental.Api.Tests.Services
             _bookingService = new BookingService(mapper, _bookingRepository.Object, rentalService.Object);
 
             rentalService.Setup(x => x.GetById(It.IsAny<int>()))
-                .Returns(new RentalViewModel {Id = 1, Units = 2});
+                .Returns(new RentalViewModel {Id = 1, Units = 2, PreparationTimeInDays = 1});
         }
 
         [Fact]
@@ -60,13 +60,13 @@ namespace VacationRental.Api.Tests.Services
             Assert.Equal(result.Nights, nights);
         }
 
-        [Theory]
-        [InlineData(2, 1)]
-        [InlineData(2, 2)]
-        [InlineData(4, 1)]
-        [InlineData(3, 3)]
-        [InlineData(5, 1)]
-        [InlineData(2, 4)]
+        [Theory]//existing booking days start at day 3 and finish at day 6
+        [InlineData(2, 1)]//starts on day 2 and finish at day 3
+        [InlineData(2, 2)]//starts on day 2 and finish at day 4
+        [InlineData(3, 3)]//starts on day 3 and finish at day 6
+        [InlineData(4, 1)]//starts on day 4 and finish at day 5
+        [InlineData(5, 2)]//starts on day 5 and finish at day 7
+        [InlineData(2, 5)]//starts on day 2 and finish at day 7
         public void VerifyBookingAvailability_BookingOverlapExist_ReturnsFalse(int startDay, int nights)
         {
             var existingBookings =
@@ -75,13 +75,13 @@ namespace VacationRental.Api.Tests.Services
                     new Booking
                     {
                         Nights = 3,
-                        Start = DateTime.Now.AddDays(3),
+                        Start = DateTime.Now.AddDays(3).Date,
                         RentalId = 1,
                     },
                     new Booking
                     {
                         Nights = 3,
-                        Start = DateTime.Now.AddDays(3),
+                        Start = DateTime.Now.AddDays(3).Date,
                         RentalId = 1,
                     },
                 };
@@ -107,7 +107,7 @@ namespace VacationRental.Api.Tests.Services
                     new Booking
                     {
                         Nights = 3,
-                        Start = DateTime.Now.AddDays(3),
+                        Start = DateTime.Now.AddDays(3).Date,
                         RentalId = 1,
                     },
                 };
@@ -120,6 +120,74 @@ namespace VacationRental.Api.Tests.Services
             };
 
             var result = _bookingService.VerifyBookingAvailability(booking, existingBookings);
+
+            Assert.True(result);
+        }
+        
+        [Theory]//existing booking days start at day 3, has 6 nights and 1 preparation day, so it finishes at day 7
+        [InlineData(2, 1)]//starts on day 2 and finish at day 3+1=4
+        [InlineData(2, 2)]//starts on day 2 and finish at day 4+1=5
+        [InlineData(3, 3)]//starts on day 3 and finish at day 6+1=7
+        [InlineData(4, 1)]//starts on day 4 and finish at day 5+1=6
+        [InlineData(5, 2)]//starts on day 5 and finish at day 7+1=8
+        [InlineData(2, 5)]//starts on day 2 and finish at day 7+1=8
+        [InlineData(1, 1)]//starts on day 1 and finish at day 2+1=3
+        [InlineData(6, 1)]//starts on day 6 and finish at day 6+1=8
+        public void VerifyBookingAvailabilityWithPreparationTime_BookingOverlapExist_ReturnsFalse(int startDay, int nights)
+        {
+            var existingBookings =
+                new List<Booking>
+                {
+                    new Booking
+                    {
+                        Nights = 3,
+                        Start = DateTime.Now.AddDays(3).Date,
+                        RentalId = 1,
+                    },
+                    new Booking
+                    {
+                        Nights = 3,
+                        Start = DateTime.Now.AddDays(3).Date,
+                        RentalId = 1,
+                    },
+                };
+            
+            
+
+            var booking = new Booking
+            {
+                Start = DateTime.Now.AddDays(startDay),
+                Nights = nights,
+                RentalId = 1,
+            };
+
+            var result = _bookingService.VerifyBookingAvailabilityWithPreparationTime(booking, existingBookings);
+
+            Assert.True(!result);
+        }
+
+        [Fact]
+        public void VerifyBookingAvailabilityWithPreparationTime_NoBookingOverlapExist_ReturnsTrue()
+        {
+            var existingBookings =
+                new List<Booking>
+                {
+                    new Booking
+                    {
+                        Nights = 3,
+                        Start = DateTime.Now.AddDays(3).Date,
+                        RentalId = 1,
+                    },
+                };
+
+            var booking = new Booking
+            {
+                Start = DateTime.Now.AddDays(2),
+                Nights = 2,
+                RentalId = 1,
+            };
+
+            var result = _bookingService.VerifyBookingAvailabilityWithPreparationTime(booking, existingBookings);
 
             Assert.True(result);
         }

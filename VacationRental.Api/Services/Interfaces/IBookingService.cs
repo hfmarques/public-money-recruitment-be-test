@@ -8,6 +8,7 @@ namespace VacationRental.Api.Services.Interfaces
     {
         BookingViewModel GetById(int id);
         bool VerifyBookingAvailability(Booking booking, List<Booking> existingBookings);
+        bool VerifyBookingAvailabilityWithPreparationTime(Booking booking, List<Booking> existingBookings);
         BookingViewModel Add(BookingBindingModel bookingBindingModel);
         void Update(BookingViewModel bookingViewModel);
         List<BookingViewModel> GetAll();

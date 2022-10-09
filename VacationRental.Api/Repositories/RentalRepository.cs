@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using VacationRental.Api.Models;
 using VacationRental.Api.Models.Entities;
 using VacationRental.Api.Repositories.Interfaces;
 
@@ -28,7 +27,8 @@ namespace VacationRental.Api.Repositories
             _rentals.Add(id, new Rental
             {
                 Id = id,
-                Units = rental.Units
+                Units = rental.Units,
+                PreparationTimeInDays = rental.PreparationTimeInDays
             });
 
             return id;
