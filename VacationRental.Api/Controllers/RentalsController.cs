@@ -51,5 +51,21 @@ namespace VacationRental.Api.Controllers
                 return BadRequest(e.Message);
             }
         }
+        
+        [HttpPut]
+        [Route("{rentalId:int}")]
+        public IActionResult Put(int rentalId, [FromBody]RentalBindingModel model)
+        {
+            try
+            {
+                _rentalService.Update(rentalId, model);
+
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

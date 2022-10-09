@@ -11,7 +11,7 @@ using Xunit;
 
 namespace VacationRental.Api.Tests.Services
 {
-    [Collection("Service")]
+    [Collection("Unit")]
     public class RentalServiceTests
     {
         private readonly Mock<IRentalRepository> _rentalRepository;
@@ -76,34 +76,33 @@ namespace VacationRental.Api.Tests.Services
         [Fact]
         public void Update_RentalIsNull_ThrowArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => _rentalService.Update(null));
+            Assert.Throws<ArgumentNullException>(() => _rentalService.Update(0, null));
         }
 
         [Fact]
         public void Update_RentalIdIsZero_ThrowArgumentException()
         {
-            Assert.Throws<ArgumentException>(() => _rentalService.Update(new RentalViewModel {Id = 0}));
+            Assert.Throws<ArgumentException>(() => _rentalService.Update(0, new RentalBindingModel()));
         }
 
         [Fact]
         public void Update_RentalDoesNotExists_ThrowArgumentException()
         {
-            Assert.Throws<ArgumentException>(() => _rentalService.Update(new RentalViewModel {Id = 1}));
+            Assert.Throws<ArgumentException>(() => _rentalService.Update(1, new RentalBindingModel()));
         }
 
         [Fact]
         public void Update_RentalIsValid_UpdateTheRental()
         {
-            var rental = new RentalViewModel
+            var rental = new RentalBindingModel
             {
-                Id = 1,
                 Units = 25,
             };
 
             _rentalRepository.Setup(x => x.GetById(It.IsAny<int>()))
                 .Returns(new Rental {Id = 1});
 
-            _rentalService.Update(rental);
+            _rentalService.Update(1, rental);
 
             _rentalRepository.Verify(x => x.Update(It.IsAny<Rental>()), Times.Once);
         }

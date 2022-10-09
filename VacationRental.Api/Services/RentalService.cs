@@ -46,24 +46,26 @@ namespace VacationRental.Api.Services
             return rentalViewModel;
         }
 
-        public void Update(RentalViewModel rentalViewModel)
+        public void Update(int rentalId, RentalBindingModel rentalBindingModel)
         {
-            if (rentalViewModel == null)
+            if (rentalBindingModel == null)
             {
-                throw new ArgumentNullException(nameof(rentalViewModel), "Rental cannot be null");
+                throw new ArgumentNullException(nameof(rentalBindingModel), "Rental cannot be null");
             }
 
-            if (rentalViewModel.Id == 0)
+            if (rentalId == 0)
             {
-                throw new ArgumentException("Id cannot be zero", nameof(rentalViewModel.Id));
+                throw new ArgumentException("Id cannot be zero", nameof(rentalId));
             }
 
-            if (GetById(rentalViewModel.Id) is null)
+            if (GetById(rentalId) is null)
             {
                 throw new ArgumentException("Rental does not exists");
             }
 
-            var rental = _mapper.Map<Rental>(rentalViewModel);
+            var rental = _mapper.Map<Rental>(rentalBindingModel);
+
+            rental.Id = rentalId;
 
             _rentalRepository.Update(rental);
         }

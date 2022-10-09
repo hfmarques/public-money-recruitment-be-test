@@ -6,6 +6,6 @@ namespace VacationRental.Api.Services.Interfaces
     {
         RentalViewModel GetById(int id);
         RentalViewModel Add(RentalBindingModel rentalBindingModel);
-        void Update(RentalViewModel rentalViewModel);
+        void Update(int rentalId, RentalBindingModel rentalBindingModel);
     }
 }
