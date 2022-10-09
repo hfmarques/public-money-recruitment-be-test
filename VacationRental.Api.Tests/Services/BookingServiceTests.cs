@@ -68,23 +68,22 @@ namespace VacationRental.Api.Tests.Services
         [InlineData(2, 4)]
         public void VerifyBookingAvailability_BookingOverlapExist_ReturnsFalse(int startDay, int nights)
         {
-            _bookingRepository.Setup(x => x.GetAll())
-                .Returns(
-                    new List<Booking>
+            var existingBookings =
+                new List<Booking>
+                {
+                    new Booking
                     {
-                        new Booking
-                        {
-                            Nights = 3,
-                            Start = DateTime.Now.AddDays(3),
-                            RentalId = 1,
-                        },
-                        new Booking
-                        {
-                            Nights = 3,
-                            Start = DateTime.Now.AddDays(3),
-                            RentalId = 1,
-                        },
-                    });
+                        Nights = 3,
+                        Start = DateTime.Now.AddDays(3),
+                        RentalId = 1,
+                    },
+                    new Booking
+                    {
+                        Nights = 3,
+                        Start = DateTime.Now.AddDays(3),
+                        RentalId = 1,
+                    },
+                };
 
             var booking = new Booking
             {
@@ -93,25 +92,24 @@ namespace VacationRental.Api.Tests.Services
                 RentalId = 1,
             };
 
-            var result = _bookingService.VerifyBookingAvailability(booking);
+            var result = _bookingService.VerifyBookingAvailability(booking, existingBookings);
 
             Assert.True(!result);
         }
-        
+
         [Fact]
         public void VerifyBookingAvailability_NoBookingOverlapExist_ReturnsTrue()
         {
-            _bookingRepository.Setup(x => x.GetAll())
-                .Returns(
-                    new List<Booking>
+            var existingBookings =
+                new List<Booking>
+                {
+                    new Booking
                     {
-                        new Booking
-                        {
-                            Nights = 3,
-                            Start = DateTime.Now.AddDays(3),
-                            RentalId = 1,
-                        },
-                    });
+                        Nights = 3,
+                        Start = DateTime.Now.AddDays(3),
+                        RentalId = 1,
+                    },
+                };
 
             var booking = new Booking
             {
@@ -120,7 +118,7 @@ namespace VacationRental.Api.Tests.Services
                 RentalId = 1,
             };
 
-            var result = _bookingService.VerifyBookingAvailability(booking);
+            var result = _bookingService.VerifyBookingAvailability(booking, existingBookings);
 
             Assert.True(result);
         }
@@ -152,30 +150,61 @@ namespace VacationRental.Api.Tests.Services
             Assert.Equal(result.Nights, nights);
         }
 
-        // [Fact]
-        // public void Update_BookingIsNull_ThrowArgumentNullException()
-        // {
-        //     Assert.Throws<ArgumentNullException>(() => _bookingService.Update(null));
-        // }
-        //
-        // [Fact]
-        // public void Update_BookingIdIsZero_ThrowArgumentException()
-        // {
-        //     Assert.Throws<ArgumentException>(() => _bookingService.Update(new BookingViewModel {Id = 0}));
-        // }
-        //
-        // [Fact]
-        // public void Update_BookingIsValid_UpdateTheBooking()
-        // {
-        //     var booking = new BookingViewModel
-        //     {
-        //         Id = 1,
-        //         Units = 25,
-        //     };
-        //
-        //     _bookingService.Update(booking);
-        //
-        //     _bookingRepository.Verify(x => x.Update(It.IsAny<Booking>()), Times.Once);
-        // }
+        [Fact]
+        public void Update_BookingIsNull_ThrowArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => _bookingService.Update(null));
+        }
+
+        [Fact]
+        public void Update_BookingIdIsZero_ThrowArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => _bookingService.Update(new BookingViewModel {Id = 0}));
+        }
+
+        [Fact]
+        public void Update_BookingDoesNotExists_ThrowArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => _bookingService.Update(new BookingViewModel {Id = 1}));
+        }
+
+        [Fact]
+        public void Update_BookingIsValid_UpdateTheBooking()
+        {
+            const int nights = 3;
+            var booking = new BookingViewModel
+            {
+                Id = 1,
+                Nights = 1,
+                Start = DateTime.Now,
+                RentalId = 1,
+            };
+
+            _bookingRepository.Setup(x => x.GetAll())
+                .Returns(new List<Booking>
+                {
+                    new Booking
+                    {
+                        Id = 1,
+                        Nights = 1,
+                        Start = DateTime.Now,
+                        RentalId = 1,
+                    },
+                    new Booking
+                    {
+                        Id = 2,
+                        Nights = 2,
+                        Start = DateTime.Now,
+                        RentalId = 1,
+                    }
+                });
+
+            _bookingRepository.Setup(x => x.GetById(It.IsAny<int>())).Returns(new Booking());
+
+            _bookingService.Update(booking);
+
+            _bookingRepository.Verify(x =>
+                x.Update(It.IsAny<Booking>()), Times.Once);
+        }
     }
 }

@@ -35,12 +35,12 @@ namespace VacationRental.Api.Services
             return bookingViewModel;
         }
 
-        public bool VerifyBookingAvailability(Booking model)
+        public bool VerifyBookingAvailability(Booking model, List<Booking> existingBookings)
         {
             for (var i = 0; i < model.Nights; i++)
             {
                 var count = 0;
-                foreach (var booking in GetAll())
+                foreach (var booking in existingBookings)
                 {
                     if (booking.RentalId == model.RentalId
                         && (booking.Start.Date <= model.Start.Date &&
@@ -74,7 +74,9 @@ namespace VacationRental.Api.Services
                 throw new ArgumentException("Rental not found", nameof(bookingBindingModel.RentalId));
 
             var booking = _mapper.Map<Booking>(bookingBindingModel);
-            var validBooking = VerifyBookingAvailability(booking);
+            var validBooking = VerifyBookingAvailability(
+                booking,
+                _bookingRepository.GetAll().ToList());
             if (!validBooking)
             {
                 throw new Exception("Not available");
@@ -84,6 +86,40 @@ namespace VacationRental.Api.Services
 
             var bookingViewModel = _mapper.Map<BookingViewModel>(booking);
             return bookingViewModel;
+        }
+
+        public void Update(BookingViewModel bookingViewModel)
+        {
+            if (bookingViewModel == null)
+            {
+                throw new ArgumentNullException(nameof(bookingViewModel), "Booking cannot be null");
+            }
+
+            if (bookingViewModel.Id == 0)
+            {
+                throw new ArgumentException("Id cannot be zero", nameof(bookingViewModel.Id));
+            }
+            
+            if (GetById(bookingViewModel.Id) is null)
+            {
+                throw new ArgumentException("Booking does not exists");
+            }
+            
+            var booking = _mapper.Map<Booking>(bookingViewModel);
+
+            var existingBookings = _bookingRepository
+                .GetAll()
+                .Where(x => x.Id != booking.Id).ToList();
+            var validBooking = VerifyBookingAvailability(
+                booking,
+                existingBookings
+                );
+            if (!validBooking)
+            {
+                throw new Exception("Not available");
+            }
+
+            _bookingRepository.Update(booking);
         }
 
         public List<BookingViewModel> GetAll()

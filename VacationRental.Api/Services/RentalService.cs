@@ -1,9 +1,7 @@
 ﻿using System;
 using AutoMapper;
-using VacationRental.Api.Models;
 using VacationRental.Api.Models.Entities;
 using VacationRental.Api.Models.ViewModels;
-using VacationRental.Api.Repositories;
 using VacationRental.Api.Repositories.Abstractions;
 
 namespace VacationRental.Api.Services
@@ -57,6 +55,11 @@ namespace VacationRental.Api.Services
             if (rentalViewModel.Id == 0)
             {
                 throw new ArgumentException("Id cannot be zero", nameof(rentalViewModel.Id));
+            }
+
+            if (GetById(rentalViewModel.Id) is null)
+            {
+                throw new ArgumentException("Rental does not exists");
             }
 
             var rental = _mapper.Map<Rental>(rentalViewModel);
