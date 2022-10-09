@@ -1,24 +1,23 @@
-﻿using System;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 using VacationRental.Api.Models;
+using VacationRental.Api.Models.ViewModels;
 using Xunit;
 
-namespace VacationRental.Api.Tests
+namespace VacationRental.Api.Tests.Integration
 {
     [Collection("Integration")]
-    public class PostRentalTests
+    public class PutRentalTests
     {
         private readonly HttpClient _client;
 
-        public PostRentalTests(IntegrationFixture fixture)
+        public PutRentalTests(IntegrationFixture fixture)
         {
             _client = fixture.Client;
         }
 
         [Fact]
-        public async Task GivenCompleteRequest_WhenPostRental_ThenAGetReturnsTheCreatedRental()
+        public async Task GivenCompleteRequest_WhenPutRental_ThenAGetReturnsTheUpdatedRental()
         {
             var request = new RentalBindingModel
             {
@@ -30,6 +29,13 @@ namespace VacationRental.Api.Tests
             {
                 Assert.True(postResponse.IsSuccessStatusCode);
                 postResult = await postResponse.Content.ReadAsAsync<ResourceIdViewModel>();
+            }
+            
+            request.Units = 30;
+
+            using (var putResponse = await _client.PutAsJsonAsync($"/api/v1/rentals/{postResult.Id}", request))
+            {
+                Assert.True(putResponse.IsSuccessStatusCode);
             }
 
             using (var getResponse = await _client.GetAsync($"/api/v1/rentals/{postResult.Id}"))
