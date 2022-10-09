@@ -2,7 +2,7 @@
 using VacationRental.Api.Models.Entities;
 using VacationRental.Api.Models.ViewModels;
 
-namespace VacationRental.Api.Services
+namespace VacationRental.Api.Services.Interfaces
 {
     public interface IBookingService
     {

@@ -2,7 +2,8 @@
 using AutoMapper;
 using VacationRental.Api.Models.Entities;
 using VacationRental.Api.Models.ViewModels;
-using VacationRental.Api.Repositories.Abstractions;
+using VacationRental.Api.Repositories.Interfaces;
+using VacationRental.Api.Services.Interfaces;
 
 namespace VacationRental.Api.Services
 {

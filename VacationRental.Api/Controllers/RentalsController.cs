@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
 using VacationRental.Api.Models.ViewModels;
 using VacationRental.Api.Services;
+using VacationRental.Api.Services.Interfaces;
 
 namespace VacationRental.Api.Controllers
 {

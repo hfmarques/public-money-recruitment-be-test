@@ -9,8 +9,9 @@ using Swashbuckle.AspNetCore.Swagger;
 using VacationRental.Api.Configurations;
 using VacationRental.Api.Models.Entities;
 using VacationRental.Api.Repositories;
-using VacationRental.Api.Repositories.Abstractions;
+using VacationRental.Api.Repositories.Interfaces;
 using VacationRental.Api.Services;
+using VacationRental.Api.Services.Interfaces;
 
 namespace VacationRental.Api
 {
@@ -44,6 +45,7 @@ namespace VacationRental.Api
 
             services.AddTransient<IRentalService, RentalService>();
             services.AddTransient<IBookingService, BookingService>();
+            services.AddTransient<ICalendarService, CalendarService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

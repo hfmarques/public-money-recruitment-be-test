@@ -5,8 +5,9 @@ using Moq;
 using VacationRental.Api.Configurations;
 using VacationRental.Api.Models.Entities;
 using VacationRental.Api.Models.ViewModels;
-using VacationRental.Api.Repositories.Abstractions;
+using VacationRental.Api.Repositories.Interfaces;
 using VacationRental.Api.Services;
+using VacationRental.Api.Services.Interfaces;
 using Xunit;
 
 namespace VacationRental.Api.Tests.Services
@@ -14,9 +15,8 @@ namespace VacationRental.Api.Tests.Services
     [Collection("Service")]
     public class BookingServiceTests
     {
-        private Mock<IBookingRepository> _bookingRepository;
-        private Mock<IRentalService> _rentalService;
-        private IBookingService _bookingService;
+        private readonly Mock<IBookingRepository> _bookingRepository;
+        private readonly IBookingService _bookingService;
 
         public BookingServiceTests()
         {
@@ -26,10 +26,11 @@ namespace VacationRental.Api.Tests.Services
             IMapper mapper = new Mapper(configuration);
 
             _bookingRepository = new Mock<IBookingRepository>();
-            _rentalService = new Mock<IRentalService>();
-            _bookingService = new BookingService(mapper, _bookingRepository.Object, _rentalService.Object);
+            var rentalService = new Mock<IRentalService>();
+            
+            _bookingService = new BookingService(mapper, _bookingRepository.Object, rentalService.Object);
 
-            _rentalService.Setup(x => x.GetById(It.IsAny<int>()))
+            rentalService.Setup(x => x.GetById(It.IsAny<int>()))
                 .Returns(new RentalViewModel {Id = 1, Units = 2});
         }
 

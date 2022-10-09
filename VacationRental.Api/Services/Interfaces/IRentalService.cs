@@ -1,7 +1,6 @@
-﻿using VacationRental.Api.Models;
-using VacationRental.Api.Models.ViewModels;
+﻿using VacationRental.Api.Models.ViewModels;
 
-namespace VacationRental.Api.Services
+namespace VacationRental.Api.Services.Interfaces
 {
     public interface IRentalService
     {

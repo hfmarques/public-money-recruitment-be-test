@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using VacationRental.Api.Models.ViewModels;
-using VacationRental.Api.Services;
+using VacationRental.Api.Services.Interfaces;
 
 namespace VacationRental.Api.Controllers
 {
@@ -10,49 +8,26 @@ namespace VacationRental.Api.Controllers
     [ApiController]
     public class CalendarController : ControllerBase
     {
-        private readonly IRentalService _rentalService;
-        private readonly IBookingService _bookingService;
+        private readonly ICalendarService _calendarService;
 
-        public CalendarController(IRentalService rentalService, IBookingService bookingService)
+        public CalendarController(ICalendarService calendarService)
         {
-            _rentalService = rentalService;
-            _bookingService = bookingService;
+            _calendarService = calendarService;
         }
 
         [HttpGet]
-        public CalendarViewModel Get(int rentalId, DateTime start, int nights)
+        public IActionResult Get(int rentalId, DateTime start, int nights)
         {
-            if (nights < 0)
-                throw new ApplicationException("Nights must be positive");
-            if (_rentalService.GetById(rentalId) is null)
-                throw new ApplicationException("Rental not found");
-
-            var result = new CalendarViewModel
+            try
             {
-                RentalId = rentalId,
-                Dates = new List<CalendarDateViewModel>()
-            };
-            for (var i = 0; i < nights; i++)
-            {
-                var date = new CalendarDateViewModel
-                {
-                    Date = start.Date.AddDays(i),
-                    Bookings = new List<CalendarBookingViewModel>()
-                };
+                var calendar = _calendarService.Get(rentalId, start, nights);
 
-                foreach (var booking in _bookingService.GetAll())
-                {
-                    if (booking.RentalId == rentalId
-                        && booking.Start <= date.Date && booking.Start.AddDays(booking.Nights) > date.Date)
-                    {
-                        date.Bookings.Add(new CalendarBookingViewModel {Id = booking.Id});
-                    }
-                }
-
-                result.Dates.Add(date);
+                return Ok(calendar);
             }
-
-            return result;
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
     }
 }

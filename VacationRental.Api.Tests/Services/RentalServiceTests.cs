@@ -4,8 +4,9 @@ using Moq;
 using VacationRental.Api.Configurations;
 using VacationRental.Api.Models.Entities;
 using VacationRental.Api.Models.ViewModels;
-using VacationRental.Api.Repositories.Abstractions;
+using VacationRental.Api.Repositories.Interfaces;
 using VacationRental.Api.Services;
+using VacationRental.Api.Services.Interfaces;
 using Xunit;
 
 namespace VacationRental.Api.Tests.Services
@@ -13,8 +14,8 @@ namespace VacationRental.Api.Tests.Services
     [Collection("Service")]
     public class RentalServiceTests
     {
-        private Mock<IRentalRepository> _rentalRepository;
-        private IRentalService _rentalService;
+        private readonly Mock<IRentalRepository> _rentalRepository;
+        private readonly IRentalService _rentalService;
 
         public RentalServiceTests()
         {
