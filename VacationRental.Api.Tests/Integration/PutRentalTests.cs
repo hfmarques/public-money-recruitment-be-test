@@ -33,7 +33,6 @@ namespace VacationRental.Api.Tests.Integration
             
             request.Units = 30;
 
-            ResourceIdViewModel putResult;
             using (var putResponse = await _client.PutAsJsonAsync($"/api/v1/rentals/{postResult.Id}", request))
             {
                 Assert.True(putResponse.IsSuccessStatusCode);

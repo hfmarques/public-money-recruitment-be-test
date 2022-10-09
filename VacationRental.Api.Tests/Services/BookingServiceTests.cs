@@ -240,7 +240,6 @@ namespace VacationRental.Api.Tests.Services
         [Fact]
         public void Update_BookingIsValid_UpdateTheBooking()
         {
-            const int nights = 3;
             var booking = new BookingViewModel
             {
                 Id = 1,
