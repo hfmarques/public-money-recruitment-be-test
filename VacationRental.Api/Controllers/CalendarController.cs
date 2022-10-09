@@ -20,7 +20,7 @@ namespace VacationRental.Api.Controllers
         {
             try
             {
-                var calendar = _calendarService.Get(rentalId, start, nights);
+                var calendar = _calendarService.GetWithUnitAndPreparationTimes(rentalId, start, nights);
 
                 return Ok(calendar);
             }

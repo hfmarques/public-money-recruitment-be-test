@@ -7,5 +7,6 @@ namespace VacationRental.Api.Models.ViewModels
     {
         public DateTime Date { get; set; }
         public List<CalendarBookingViewModel> Bookings { get; set; }
+        public List<CalendarPreparationTimeViewModel> PreparationTimes { get; set; }
     }
 }

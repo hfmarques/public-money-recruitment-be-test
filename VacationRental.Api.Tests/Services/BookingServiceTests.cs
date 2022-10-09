@@ -12,7 +12,7 @@ using Xunit;
 
 namespace VacationRental.Api.Tests.Services
 {
-    [Collection("Service")]
+    [Collection("Unit")]
     public class BookingServiceTests
     {
         private readonly Mock<IBookingRepository> _bookingRepository;
